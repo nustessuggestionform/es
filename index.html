@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ES - SUGGESTION FORM</title>
+  <meta name="description" content="ES - SUGGESTION FORM for submitting suggestions and complaints." />
+  <meta property="og:title" content="ES - SUGGESTION FORM" />
+  <meta property="og:description" content="ES - SUGGESTION FORM for submitting suggestions and complaints." />
+  <meta property="og:type" content="website" />
+  <style>
+    :root {
+      --navy: #1F3A68;
+      --navy-hover: #172C50;
+      --navy-focus: rgba(31, 58, 104, 0.16);
+      --page-bg: #EBF0F6;
+      --card-bg: #FFFFFF;
+      --footer-bg: #F3F6FA;
+      --text-main: #1B2432;
+      --text-muted: #526075;
+      --border-neutral: #CFD8E5;
+      --input-bg: #FAFBFD;
+      --error-red: #C62828;
+      --error-bg: #FEF2F2;
+      --error-border: #F5C2C2;
+      --error-focus: rgba(198, 40, 40, 0.14);
+      --success-green: #166534;
+      --success-bg: #ECFDF3;
+      --success-border: #A7E9C0;
+      --radius-card: 14px;
+      --radius-input: 10px;
+      --logo-height: 58px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--page-bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 14px 28px;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin: auto 0;
+    }
+
+    .form-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-card);
+      box-shadow: 0 10px 28px rgba(31, 58, 104, 0.08), 0 2px 6px rgba(31, 58, 104, 0.04);
+      border: 1px solid #DCE3EE;
+      padding: 26px 28px 28px;
+    }
+
+    /* Header: Left Logo - Centered Title - Right Logo */
+    .form-header {
+      display: grid;
+      grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto);
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--navy);
+    }
+
+    .logo-slot {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .logo-slot-left {
+      justify-content: flex-start;
+    }
+
+    .logo-slot-right {
+      justify-content: flex-end;
+    }
+
+    .header-logo {
+      display: block;
+      height: var(--logo-height);
+      width: auto;
+      max-width: 130px;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .header-logo-canvas {
+      display: block;
+      object-fit: contain;
+      user-select: none;
+    }
+
+    .form-title {
+      margin: 0;
+      text-align: center;
+      color: var(--navy);
+      font-size: clamp(1.12rem, 3vw, 1.55rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      line-height: 1.25;
+      text-wrap: balance;
+      min-width: 0;
+    }
+
+    /* Form Fields */
+    .suggestion-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .field-label {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .field-error {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--error-red);
+      line-height: 1.2;
+    }
+
+    .field-error:empty {
+      display: none;
+    }
+
+    .field-control {
+      width: 100%;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1.45;
+      color: var(--text-main);
+      background-color: var(--input-bg);
+      border: 1.5px solid var(--border-neutral);
+      border-radius: var(--radius-input);
+      padding: 12px 14px;
+      min-height: 48px;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .field-control::placeholder {
+      color: #8592A6;
+    }
+
+    .field-control:focus {
+      outline: none;
+      background-color: #FFFFFF;
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px var(--navy-focus);
+    }
+
+    textarea.field-control {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .field-group.has-error .field-control {
+      border-color: var(--error-red);
+      background-color: #FFFBFB;
+    }
+
+    .field-group.has-error .field-control:focus {
+      border-color: var(--error-red);
+      box-shadow: 0 0 0 3px var(--error-focus);
+    }
+
+    /* Status & Submit Area */
+    .submit-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .status-banner {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 9px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .status-banner.is-visible {
+      display: block;
+    }
+
+    .status-banner.is-error {
+      color: var(--error-red);
+      background-color: var(--error-bg);
+      border: 1px solid var(--error-border);
+    }
+
+    .status-banner.is-success {
+      color: var(--success-green);
+      background-color: var(--success-bg);
+      border: 1px solid var(--success-border);
+    }
+
+    .submit-btn {
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 20px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #FFFFFF;
+      background-color: var(--navy);
+      border: none;
+      border-radius: var(--radius-input);
+      cursor: pointer;
+      transition: background-color 0.16s ease, transform 0.12s ease, opacity 0.16s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background-color: var(--navy-hover);
+    }
+
+    .submit-btn:active:not(:disabled) {
+      transform: scale(0.99);
+    }
+
+    .submit-btn:focus-visible {
+      outline: 3px solid var(--navy-focus);
+      outline-offset: 2px;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.68;
+      cursor: not-allowed;
+    }
+
+    /* Footer */
+    .site-footer {
+      background-color: var(--footer-bg);
+      border: 1.5px solid var(--navy);
+      border-radius: var(--radius-card);
+      padding: 14px 18px;
+      text-align: center;
+      color: var(--navy);
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.45;
+      box-shadow: 0 4px 14px rgba(31, 58, 104, 0.05);
+    }
+
+    @media (max-width: 540px) {
+      :root {
+        --logo-height: 44px;
+      }
+
+      body {
+        padding: 12px 10px 20px;
+      }
+
+      .form-card {
+        padding: 18px 16px 22px;
+      }
+
+      .form-header {
+        grid-template-columns: minmax(36px, auto) 1fr minmax(36px, auto);
+        gap: 10px;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+      }
+
+      .header-logo {
+        max-width: 78px;
+      }
+
+      .form-title {
+        font-size: clamp(0.98rem, 4.3vw, 1.25rem);
+      }
+
+      .suggestion-form {
+        gap: 15px;
+      }
+
+      .site-footer {
+        padding: 12px 14px;
+        font-size: 0.8125rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <main class="form-card">
+      <header class="form-header">
+        <div class="logo-slot logo-slot-left" id="logoSlotLeft">
+          <img
+            id="logoLeft"
+            class="header-logo"
+            src="1.png"
+            alt="Left Emblem"
+            decoding="async"
+          />
+        </div>
+
+        <h1 class="form-title">ES - SUGGESTION FORM</h1>
+
+        <div class="logo-slot logo-slot-right" id="logoSlotRight">
+          <img
+            id="logoRight"
+            class="header-logo"
+            src="2.png"
+            alt="Right Emblem"
+            decoding="async"
+          />
+        </div>
+      </header>
+
+      <form id="suggestionForm" class="suggestion-form" novalidate>
+        <div class="field-group" data-field="name">
+          <div class="label-row">
+            <label class="field-label" for="name">Name</label>
+            <span class="field-error" id="error-name" aria-live="polite"></span>
+          </div>
+          <input
+            class="field-control"
+            type="text"
+            id="name"
+            name="name"
+            placeholder="Write your name"
+            autocomplete="name"
+          />
+        </div>
+
+        <div class="field-group" data-field="pno">
+          <div class="label-row">
+            <label class="field-label" for="pno">P No / Reg No</label>
+            <span class="field-error" id="error-pno" aria-live="polite"></span>
+          </div>
+          <input
+            class="field-control"
+            type="text"
+            id="pno"
+            name="pno"
+            placeholder="Write your P No / Reg No"
+          />
+        </div>
+
+        <div class="field-group" data-field="dept">
+          <div class="label-row">
+            <label class="field-label" for="dept">Department / Semester</label>
+            <span class="field-error" id="error-dept" aria-live="polite"></span>
+          </div>
+          <input
+            class="field-control"
+            type="text"
+            id="dept"
+            name="dept"
+            placeholder="Write your department / semester"
+          />
+        </div>
+
+        <div class="field-group" data-field="contact">
+          <div class="label-row">
+            <label class="field-label" for="contact">Contact Number</label>
+            <span class="field-error" id="error-contact" aria-live="polite"></span>
+          </div>
+          <input
+            class="field-control"
+            type="tel"
+            id="contact"
+            name="contact"
+            placeholder="Write your contact number"
+            autocomplete="tel"
+          />
+        </div>
+
+        <div class="field-group" data-field="message">
+          <div class="label-row">
+            <label class="field-label" for="message">Suggestion / Complaint</label>
+            <span class="field-error" id="error-message" aria-live="polite"></span>
+          </div>
+          <textarea
+            class="field-control"
+            id="message"
+            name="message"
+            rows="6"
+            placeholder="Write your suggestion or complaint here"
+          ></textarea>
+        </div>
+
+        <div class="submit-area">
+          <div id="formStatus" class="status-banner" role="status" aria-live="polite"></div>
+          <button type="submit" id="submitBtn" class="submit-btn">Submit</button>
+        </div>
+      </form>
+    </main>
+
+    <footer class="site-footer">
+      Developed under the supervision of Lt Ahmad Faraz PN by M Bilal Khalid HSG-1
+    </footer>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+
+    (function () {
+      "use strict";
+
+      /* =========================================================
+         1. Header Logo Background Removal, Trim & Sharp Rendering
+         ========================================================= */
+      const processedLogos = [];
+
+      function getTargetCssHeight() {
+        return window.innerWidth <= 540 ? 44 : 58;
+      }
+
+      function colorDistanceSq(r1, g1, b1, r2, g2, b2) {
+        const dr = r1 - r2;
+        const dg = g1 - g2;
+        const db = b1 - b2;
+        return dr * dr + dg * dg + db * db;
+      }
+
+      function detectBackgroundFromCorners(data, w, h) {
+        const corners = [
+          [0, 0],
+          [w - 1, 0],
+          [0, h - 1],
+          [w - 1, h - 1]
+        ];
+
+        const samples = corners.map(([x, y]) => {
+          const idx = (y * w + x) * 4;
+          return {
+            x,
+            y,
+            r: data[idx],
+            g: data[idx + 1],
+            b: data[idx + 2],
+            a: data[idx + 3]
+          };
+        });
+
+        // If all corners are already transparent, background is already removed
+        const transparentCorners = samples.filter((s) => s.a <= 15);
+        if (transparentCorners.length === 4) {
+          return { alreadyTransparent: true, corners: samples };
+        }
+
+        const opaqueSamples = samples.filter((s) => s.a > 15);
+        if (opaqueSamples.length < 3) {
+          return null;
+        }
+
+        const cornerMatchTolSq = 40 * 40;
+        let bestCluster = [];
+
+        for (let i = 0; i < opaqueSamples.length; i++) {
+          const ref = opaqueSamples[i];
+          const cluster = opaqueSamples.filter(
+            (s) => colorDistanceSq(ref.r, ref.g, ref.b, s.r, s.g, s.b) <= cornerMatchTolSq
+          );
+          if (cluster.length > bestCluster.length) {
+            bestCluster = cluster;
+          }
+        }
+
+        // Require at least 3 corners to share a uniform background color
+        if (bestCluster.length < 3) {
+          return null;
+        }
+
+        const avgR = Math.round(bestCluster.reduce((sum, c) => sum + c.r, 0) / bestCluster.length);
+        const avgG = Math.round(bestCluster.reduce((sum, c) => sum + c.g, 0) / bestCluster.length);
+        const avgB = Math.round(bestCluster.reduce((sum, c) => sum + c.b, 0) / bestCluster.length);
+
+        return {
+          alreadyTransparent: false,
+          r: avgR,
+          g: avgG,
+          b: avgB,
+          seeds: bestCluster
+        };
+      }
+
+      function floodFillBackground(data, w, h, bgInfo) {
+        if (bgInfo.alreadyTransparent) {
+          return;
+        }
+
+        const total = w * h;
+        const visited = new Uint8Array(total);
+        const queue = new Int32Array(total);
+        let head = 0;
+        let tail = 0;
+
+        // Small tolerance to handle subtle anti-aliasing/compression around edges
+        const toleranceSq = 36 * 36;
+
+        function tryEnqueue(x, y) {
+          if (x < 0 || x >= w || y < 0 || y >= h) return;
+          const pos = y * w + x;
+          if (visited[pos]) return;
+          const idx = pos * 4;
+          const a = data[idx + 3];
+          if (a <= 15 || colorDistanceSq(data[idx], data[idx + 1], data[idx + 2], bgInfo.r, bgInfo.g, bgInfo.b) <= toleranceSq) {
+            visited[pos] = 1;
+            queue[tail++] = pos;
+          }
+        }
+
+        for (let i = 0; i < bgInfo.seeds.length; i++) {
+          tryEnqueue(bgInfo.seeds[i].x, bgInfo.seeds[i].y);
+        }
+
+        while (head < tail) {
+          const pos = queue[head++];
+          const idx = pos * 4;
+          data[idx + 3] = 0;
+
+          const x = pos % w;
+          const y = (pos - x) / w;
+
+          if (x > 0) tryEnqueue(x - 1, y);
+          if (x < w - 1) tryEnqueue(x + 1, y);
+          if (y > 0) tryEnqueue(x, y - 1);
+          if (y < h - 1) tryEnqueue(x, y + 1);
+        }
+      }
+
+      function trimTransparentEdges(srcCanvas) {
+        const w = srcCanvas.width;
+        const h = srcCanvas.height;
+        const ctx = srcCanvas.getContext("2d", { willReadFrequently: true });
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+
+        let minX = w;
+        let minY = h;
+        let maxX = -1;
+        let maxY = -1;
+
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const alpha = data[(y * w + x) * 4 + 3];
+            if (alpha > 10) {
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+
+        if (maxX < minX || maxY < minY) {
+          return null;
+        }
+
+        const trimW = maxX - minX + 1;
+        const trimH = maxY - minY + 1;
+
+        const trimmed = document.createElement("canvas");
+        trimmed.width = trimW;
+        trimmed.height = trimH;
+        const trimCtx = trimmed.getContext("2d");
+        trimCtx.drawImage(srcCanvas, minX, minY, trimW, trimH, 0, 0, trimW, trimH);
+
+        return trimmed;
+      }
+
+      function renderSharpLogoCanvas(entry) {
+        const { trimCanvas, displayCanvas } = entry;
+        const origW = trimCanvas.width;
+        const origH = trimCanvas.height;
+        const targetCssH = getTargetCssHeight();
+        const maxAllowedW = window.innerWidth <= 540 ? 96 : 150;
+        const dpr = window.devicePixelRatio || 1;
+
+        // Never enlarge beyond the original pixels
+        let cssH = Math.min(targetCssH, origH);
+        const aspect = origW / origH;
+        let cssW = cssH * aspect;
+
+        if (cssW > maxAllowedW) {
+          const scale = maxAllowedW / cssW;
+          cssW *= scale;
+          cssH *= scale;
+        }
+
+        cssW = Math.max(1, Math.round(cssW * 100) / 100);
+        cssH = Math.max(1, Math.round(cssH * 100) / 100);
+
+        const pixelH = Math.min(origH, Math.max(1, Math.round(cssH * dpr)));
+        const pixelW = Math.min(origW, Math.max(1, Math.round(pixelH * aspect)));
+
+        displayCanvas.width = pixelW;
+        displayCanvas.height = pixelH;
+        displayCanvas.style.height = cssH + "px";
+        displayCanvas.style.width = cssW + "px";
+        displayCanvas.style.maxWidth = "none";
+
+        const ctx = displayCanvas.getContext("2d");
+        ctx.clearRect(0, 0, pixelW, pixelH);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(trimCanvas, 0, 0, origW, origH, 0, 0, pixelW, pixelH);
+      }
+
+      function processHeaderLogo(imgEl, slotEl, jpgFallbackName) {
+        let lastProcessedSrc = "";
+
+        imgEl.addEventListener("error", function () {
+          if (!imgEl.dataset.triedFallback && jpgFallbackName) {
+            imgEl.dataset.triedFallback = "true";
+            imgEl.src = jpgFallbackName;
+            return;
+          }
+          imgEl.style.display = "none";
+        });
+
+        function handleLoad() {
+          if (lastProcessedSrc === imgEl.currentSrc) {
+            return;
+          }
+          lastProcessedSrc = imgEl.currentSrc || imgEl.src;
+
+          try {
+            const w = imgEl.naturalWidth;
+            const h = imgEl.naturalHeight;
+            if (!w || !h) {
+              return;
+            }
+
+            const workCanvas = document.createElement("canvas");
+            workCanvas.width = w;
+            workCanvas.height = h;
+            const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
+            workCtx.drawImage(imgEl, 0, 0, w, h);
+
+            const imageData = workCtx.getImageData(0, 0, w, h);
+            const bgInfo = detectBackgroundFromCorners(imageData.data, w, h);
+
+            // If there is no plain background, keep the original image as-is
+            if (!bgInfo) {
+              return;
+            }
+
+            floodFillBackground(imageData.data, w, h, bgInfo);
+            workCtx.putImageData(imageData, 0, 0);
+
+            const trimCanvas = trimTransparentEdges(workCanvas);
+            if (!trimCanvas) {
+              return;
+            }
+
+            const displayCanvas = document.createElement("canvas");
+            displayCanvas.className = "header-logo header-logo-canvas";
+            displayCanvas.setAttribute("role", "img");
+            displayCanvas.setAttribute("aria-label", imgEl.alt || "Logo");
+
+            const entry = { trimCanvas, displayCanvas };
+            renderSharpLogoCanvas(entry);
+            processedLogos.push(entry);
+
+            imgEl.style.display = "none";
+            slotEl.appendChild(displayCanvas);
+          } catch (err) {
+            // Keep original image visible if canvas processing fails
+            imgEl.style.display = "";
+          }
+        }
+
+        imgEl.addEventListener("load", handleLoad);
+
+        // Handle cached images that may have finished loading before listener attachment
+        if (imgEl.complete && imgEl.naturalWidth > 0) {
+          handleLoad();
+        }
+      }
+
+      window.addEventListener("resize", function () {
+        for (let i = 0; i < processedLogos.length; i++) {
+          try {
+            renderSharpLogoCanvas(processedLogos[i]);
+          } catch (err) {
+            // Ignore resize redraw error
+          }
+        }
+      });
+
+      processHeaderLogo(
+        document.getElementById("logoLeft"),
+        document.getElementById("logoSlotLeft"),
+        "1.jpg"
+      );
+      processHeaderLogo(
+        document.getElementById("logoRight"),
+        document.getElementById("logoSlotRight"),
+        "2.jpg"
+      );
+
+      /* =========================================================
+         2. Form Validation & Google Apps Script Submission
+         ========================================================= */
+      const form = document.getElementById("suggestionForm");
+      const submitBtn = document.getElementById("submitBtn");
+      const formStatus = document.getElementById("formStatus");
+
+      const fields = [
+        { id: "name", max: 20 },
+        { id: "pno", max: 20 },
+        { id: "dept", max: 20 },
+        { id: "contact", max: 20 },
+        { id: "message", max: 1000 }
+      ].map((cfg) => {
+        const input = document.getElementById(cfg.id);
+        const group = input.closest(".field-group");
+        const errorEl = document.getElementById("error-" + cfg.id);
+        return {
+          id: cfg.id,
+          max: cfg.max,
+          input,
+          group,
+          errorEl
+        };
+      });
+
+      let hasAttemptedSubmit = false;
+      let isSubmitting = false;
+
+      function setFieldError(field, message) {
+        if (message) {
+          field.group.classList.add("has-error");
+          field.errorEl.textContent = message;
+          field.input.setAttribute("aria-invalid", "true");
+        } else {
+          field.group.classList.remove("has-error");
+          field.errorEl.textContent = "";
+          field.input.removeAttribute("aria-invalid");
+        }
+      }
+
+      function setStatusBanner(type, message) {
+        formStatus.className = "status-banner";
+        if (!message) {
+          formStatus.textContent = "";
+          return;
+        }
+        formStatus.textContent = message;
+        formStatus.classList.add("is-visible", type === "success" ? "is-success" : "is-error");
+      }
+
+      function validateSingleField(field, checkRequired) {
+        const raw = field.input.value;
+        const trimmed = raw.trim();
+
+        if (raw.length > field.max) {
+          setFieldError(field, "Too long");
+          return false;
+        }
+
+        if (checkRequired && trimmed.length === 0) {
+          setFieldError(field, "Required");
+          return false;
+        }
+
+        setFieldError(field, "");
+        return true;
+      }
+
+      fields.forEach((field) => {
+        field.input.addEventListener("input", function () {
+          // Clear any previous submission success banner once user types again
+          if (formStatus.classList.contains("is-success")) {
+            setStatusBanner("", "");
+          }
+
+          validateSingleField(field, hasAttemptedSubmit);
+
+          if (hasAttemptedSubmit && formStatus.classList.contains("is-error")) {
+            const allValidNow = fields.every(
+              (f) => f.input.value.trim().length > 0 && f.input.value.length <= f.max
+            );
+            if (allValidNow) {
+              setStatusBanner("", "");
+            }
+          }
+        });
+      });
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        if (isSubmitting) return;
+
+        hasAttemptedSubmit = true;
+        let firstInvalid = null;
+        let allValid = true;
+
+        for (let i = 0; i < fields.length; i++) {
+          const valid = validateSingleField(fields[i], true);
+          if (!valid) {
+            allValid = false;
+            if (!firstInvalid) {
+              firstInvalid = fields[i].input;
+            }
+          }
+        }
+
+        if (!allValid) {
+          setStatusBanner("error", "Please fix the highlighted fields.");
+          if (firstInvalid) {
+            firstInvalid.focus();
+          }
+          return;
+        }
+
+        isSubmitting = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting...";
+        setStatusBanner("", "");
+
+        const payload = {
+          name: document.getElementById("name").value.trim(),
+          pno: document.getElementById("pno").value.trim(),
+          dept: document.getElementById("dept").value.trim(),
+          contact: document.getElementById("contact").value.trim(),
+          message: document.getElementById("message").value.trim()
+        };
+
+        try {
+          await fetch(SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload)
+          });
+
+          form.reset();
+          hasAttemptedSubmit = false;
+          fields.forEach((f) => setFieldError(f, ""));
+          setStatusBanner("success", "Thank you! Your response has been submitted.");
+        } catch (err) {
+          setStatusBanner("error", "Something went wrong. Please try again.");
+        } finally {
+          isSubmitting = false;
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
