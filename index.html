@@ -123,12 +123,12 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 4px;
       min-width: 0;
     }
 
     .form-title-main {
-      font-size: clamp(0.72rem, 2.65vw, 1.32rem);
+      font-size: clamp(0.84rem, 3.1vw, 1.52rem);
       font-weight: 700;
       letter-spacing: 0.02em;
       line-height: 1.2;
@@ -136,7 +136,7 @@
     }
 
     .form-title-sub {
-      font-size: clamp(0.78rem, 2.45vw, 1.16rem);
+      font-size: clamp(0.86rem, 2.75vw, 1.32rem);
       font-weight: 700;
       letter-spacing: 0.04em;
       line-height: 1.2;
@@ -337,9 +337,13 @@
       }
     }
 
-    @media (max-width: 345px) {
+    @media (max-width: 380px) {
       .form-title-main {
-        font-size: 0.66rem;
+        font-size: clamp(0.68rem, 3.15vw, 0.84rem);
+      }
+
+      .form-title-sub {
+        font-size: clamp(0.72rem, 2.9vw, 0.86rem);
       }
     }
   </style>
@@ -673,19 +677,25 @@
         let lastProcessedSrc = "";
         let fallbackIndex = 0;
 
-        imgEl.addEventListener("error", function () {
+        function handleError() {
           if (fallbackSources && fallbackIndex < fallbackSources.length) {
-            imgEl.src = fallbackSources[fallbackIndex++];
+            const nextSrc = fallbackSources[fallbackIndex++];
+            if (nextSrc && nextSrc !== imgEl.getAttribute("src")) {
+              imgEl.src = nextSrc;
+              return;
+            }
+            handleError();
             return;
           }
           imgEl.style.display = "none";
-        });
+        }
 
         function handleLoad() {
-          if (lastProcessedSrc === imgEl.currentSrc) {
+          const srcKey = imgEl.currentSrc || imgEl.src;
+          if (!srcKey || lastProcessedSrc === srcKey) {
             return;
           }
-          lastProcessedSrc = imgEl.currentSrc || imgEl.src;
+          lastProcessedSrc = srcKey;
 
           try {
             const w = imgEl.naturalWidth;
@@ -705,6 +715,7 @@
 
             // If there is no plain background, keep the original image as-is
             if (!bgInfo) {
+              imgEl.style.display = "";
               return;
             }
 
@@ -713,7 +724,13 @@
 
             const trimCanvas = trimTransparentEdges(workCanvas);
             if (!trimCanvas) {
+              imgEl.style.display = "";
               return;
+            }
+
+            const existingCanvas = slotEl.querySelector(".header-logo-canvas");
+            if (existingCanvas) {
+              existingCanvas.remove();
             }
 
             const displayCanvas = document.createElement("canvas");
@@ -733,11 +750,16 @@
           }
         }
 
+        imgEl.addEventListener("error", handleError);
         imgEl.addEventListener("load", handleLoad);
 
-        // Handle cached images that may have finished loading before listener attachment
-        if (imgEl.complete && imgEl.naturalWidth > 0) {
-          handleLoad();
+        // Handle images that already finished loading or failed before listener attachment
+        if (imgEl.complete) {
+          if (imgEl.naturalWidth > 0) {
+            handleLoad();
+          } else {
+            handleError();
+          }
         }
       }
 
@@ -754,13 +776,13 @@
       processHeaderLogo(
         document.getElementById("logoLeft"),
         document.getElementById("logoSlotLeft"),
-        ["1.jpg", "1.png", "/assets/aistudio/1_5c2ceda8.jpeg"],
+        ["1.jpg", "1.png", "1_altered.png", "/assets/aistudio/1_5c2ceda8.jpeg", "assets/aistudio/1_5c2ceda8.jpeg"],
         1.14
       );
       processHeaderLogo(
         document.getElementById("logoRight"),
         document.getElementById("logoSlotRight"),
-        ["2.jpeg", "2.png", "/assets/aistudio/2_4bfca449.jpg"],
+        ["2.jpeg", "2.png", "2_altered.png", "/assets/aistudio/2_4bfca449.jpg", "assets/aistudio/2_4bfca449.jpg"],
         1
       );
 
