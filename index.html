@@ -71,16 +71,16 @@
 
     .form-card {
       background-color: var(--card-bg);
-      padding: 26px 28px 28px;
+      padding: 26px 24px 28px;
     }
 
     /* Header: Left Logo - Centered Title - Right Logo */
     .form-header {
       display: grid;
-      grid-template-columns: minmax(44px, auto) 1fr minmax(44px, auto);
+      grid-template-columns: minmax(44px, auto) minmax(0, 1fr) minmax(44px, auto);
       align-items: center;
-      gap: 16px;
-      padding-bottom: 18px;
+      gap: 12px;
+      padding-bottom: 14px;
       margin-bottom: 24px;
       border-bottom: 4px solid var(--navy);
     }
@@ -116,22 +116,27 @@
     }
 
     .form-title {
-      margin: 0;
+      margin: 0 0 -6px 0;
+      width: 100%;
       text-align: center;
       color: var(--navy);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 4px;
+      justify-content: flex-end;
+      align-self: end;
+      gap: 5px;
       min-width: 0;
+      container-type: inline-size;
     }
 
     .form-title-main {
-      font-size: clamp(0.96rem, 3.35vw, 1.66rem);
+      font-size: clamp(0.62rem, 3.05vw, 1.54rem);
+      font-size: clamp(0.62rem, 4.85cqi, 1.54rem);
       font-weight: 800;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.01em;
       line-height: 1.18;
+      white-space: nowrap;
     }
 
     .form-title-sub {
@@ -312,14 +317,18 @@
       }
 
       .form-card {
-        padding: 18px 14px 22px;
+        padding: 18px 12px 22px;
       }
 
       .form-header {
-        grid-template-columns: minmax(34px, auto) 1fr minmax(34px, auto);
-        gap: 8px;
-        padding-bottom: 14px;
+        grid-template-columns: minmax(34px, auto) minmax(0, 1fr) minmax(34px, auto);
+        gap: 6px;
+        padding-bottom: 11px;
         margin-bottom: 18px;
+      }
+
+      .form-title {
+        margin-bottom: -5px;
       }
 
       .header-logo {
@@ -337,10 +346,6 @@
     }
 
     @media (max-width: 380px) {
-      .form-title-main {
-        font-size: clamp(0.86rem, 3.6vw, 0.98rem);
-      }
-
       .form-title-sub {
         font-size: clamp(0.84rem, 3.2vw, 0.96rem);
       }
