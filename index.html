@@ -356,7 +356,7 @@
           <img
             id="logoLeft"
             class="header-logo"
-            src="1.jpeg"
+            src="1.jpg"
             alt="Jauhar Emblem"
             decoding="async"
           />
@@ -673,24 +673,22 @@
         ctx.drawImage(trimCanvas, 0, 0, origW, origH, 0, 0, pixelW, pixelH);
       }
 
-      function processHeaderLogo(imgEl, slotEl, fallbackSources, widthScale) {
+      function processHeaderLogo(imgEl, slotEl, fileCandidates, widthScale) {
         let lastProcessedSrc = "";
-        let fallbackIndex = 0;
+        let candidateIndex = 0;
 
         function handleError() {
-          if (fallbackSources && fallbackIndex < fallbackSources.length) {
-            const nextSrc = fallbackSources[fallbackIndex++];
-            if (nextSrc && nextSrc !== imgEl.getAttribute("src")) {
-              imgEl.src = nextSrc;
-              return;
-            }
-            handleError();
-            return;
+          candidateIndex += 1;
+          if (fileCandidates && candidateIndex < fileCandidates.length) {
+            imgEl.src = fileCandidates[candidateIndex];
           }
-          imgEl.style.display = "none";
         }
 
         function handleLoad() {
+          if (!imgEl.complete || imgEl.naturalWidth === 0) {
+            return;
+          }
+
           const srcKey = imgEl.currentSrc || imgEl.src;
           if (!srcKey || lastProcessedSrc === srcKey) {
             return;
@@ -701,6 +699,7 @@
             const w = imgEl.naturalWidth;
             const h = imgEl.naturalHeight;
             if (!w || !h) {
+              imgEl.style.display = "";
               return;
             }
 
@@ -708,6 +707,10 @@
             workCanvas.width = w;
             workCanvas.height = h;
             const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
+            if (!workCtx) {
+              imgEl.style.display = "";
+              return;
+            }
             workCtx.drawImage(imgEl, 0, 0, w, h);
 
             const imageData = workCtx.getImageData(0, 0, w, h);
@@ -738,14 +741,14 @@
             displayCanvas.setAttribute("role", "img");
             displayCanvas.setAttribute("aria-label", imgEl.alt || "Logo");
 
-            const entry = { trimCanvas, displayCanvas, widthScale: widthScale || 1 };
+            const entry = { trimCanvas, displayCanvas, imgEl, widthScale: widthScale || 1 };
             renderSharpLogoCanvas(entry);
             processedLogos.push(entry);
 
-            imgEl.style.display = "none";
             slotEl.appendChild(displayCanvas);
+            imgEl.style.display = "none";
           } catch (err) {
-            // Keep original image visible if canvas processing fails
+            // Keep original image visible if canvas processing fails for any reason
             imgEl.style.display = "";
           }
         }
@@ -765,10 +768,16 @@
 
       window.addEventListener("resize", function () {
         for (let i = 0; i < processedLogos.length; i++) {
+          const entry = processedLogos[i];
           try {
-            renderSharpLogoCanvas(processedLogos[i]);
+            renderSharpLogoCanvas(entry);
           } catch (err) {
-            // Ignore resize redraw error
+            if (entry.displayCanvas && entry.displayCanvas.parentNode) {
+              entry.displayCanvas.parentNode.removeChild(entry.displayCanvas);
+            }
+            if (entry.imgEl) {
+              entry.imgEl.style.display = "";
+            }
           }
         }
       });
@@ -776,13 +785,13 @@
       processHeaderLogo(
         document.getElementById("logoLeft"),
         document.getElementById("logoSlotLeft"),
-        ["1.jpg", "1.png", "1_altered.png", "/assets/aistudio/1_5c2ceda8.jpeg", "assets/aistudio/1_5c2ceda8.jpeg"],
+        ["1.jpg", "1.jpeg", "1.png", "1.webp", "1.JPG", "1.JPEG", "1.PNG"],
         1.14
       );
       processHeaderLogo(
         document.getElementById("logoRight"),
         document.getElementById("logoSlotRight"),
-        ["2.jpeg", "2.png", "2_altered.png", "/assets/aistudio/2_4bfca449.jpg", "assets/aistudio/2_4bfca449.jpg"],
+        ["2.jpg", "2.jpeg", "2.png", "2.webp", "2.JPG", "2.JPEG", "2.PNG"],
         1
       );
 
