@@ -335,8 +335,8 @@
           <img
             id="logoLeft"
             class="header-logo"
-            src="1.png"
-            alt="Left Emblem"
+            src="1.jpeg"
+            alt="Jauhar Emblem"
             decoding="async"
           />
         </div>
@@ -347,8 +347,8 @@
           <img
             id="logoRight"
             class="header-logo"
-            src="2.png"
-            alt="Right Emblem"
+            src="2.jpg"
+            alt="NUST Emblem"
             decoding="async"
           />
         </div>
@@ -535,7 +535,7 @@
         let tail = 0;
 
         // Small tolerance to handle subtle anti-aliasing/compression around edges
-        const toleranceSq = 36 * 36;
+        const toleranceSq = 34 * 34;
 
         function tryEnqueue(x, y) {
           if (x < 0 || x >= w || y < 0 || y >= h) return;
@@ -646,13 +646,13 @@
         ctx.drawImage(trimCanvas, 0, 0, origW, origH, 0, 0, pixelW, pixelH);
       }
 
-      function processHeaderLogo(imgEl, slotEl, jpgFallbackName) {
+      function processHeaderLogo(imgEl, slotEl, fallbackSources) {
         let lastProcessedSrc = "";
+        let fallbackIndex = 0;
 
         imgEl.addEventListener("error", function () {
-          if (!imgEl.dataset.triedFallback && jpgFallbackName) {
-            imgEl.dataset.triedFallback = "true";
-            imgEl.src = jpgFallbackName;
+          if (fallbackSources && fallbackIndex < fallbackSources.length) {
+            imgEl.src = fallbackSources[fallbackIndex++];
             return;
           }
           imgEl.style.display = "none";
@@ -731,12 +731,12 @@
       processHeaderLogo(
         document.getElementById("logoLeft"),
         document.getElementById("logoSlotLeft"),
-        "1.jpg"
+        ["1.jpg", "1.png", "/assets/aistudio/1_5c2ceda8.jpeg"]
       );
       processHeaderLogo(
         document.getElementById("logoRight"),
         document.getElementById("logoSlotRight"),
-        "2.jpg"
+        ["2.jpeg", "2.png", "/assets/aistudio/2_4bfca449.jpg"]
       );
 
       /* =========================================================
