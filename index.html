@@ -356,9 +356,9 @@
           <img
             id="logoLeft"
             class="header-logo"
-            src="1.jpg"
-            alt="Jauhar Emblem"
+            alt=""
             decoding="async"
+            style="visibility: hidden;"
           />
         </div>
 
@@ -371,9 +371,9 @@
           <img
             id="logoRight"
             class="header-logo"
-            src="2.jpg"
-            alt="NUST Emblem"
+            alt=""
             decoding="async"
+            style="visibility: hidden;"
           />
         </div>
       </header>
@@ -673,97 +673,123 @@
         ctx.drawImage(trimCanvas, 0, 0, origW, origH, 0, 0, pixelW, pixelH);
       }
 
+      const LOGO_FOLDERS = ["", "./", "public/", "assets/", "images/", "img/"];
+      const LOGO_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".JPG", ".JPEG", ".PNG", ".WEBP"];
+
+      function buildLogoCandidates(priorityFiles, baseNames) {
+        const seen = new Set();
+        const list = [];
+
+        function add(path) {
+          if (!path || path.startsWith("/") || seen.has(path)) return;
+          seen.add(path);
+          list.push(path);
+        }
+
+        for (let i = 0; i < priorityFiles.length; i++) {
+          add(priorityFiles[i]);
+        }
+
+        for (let f = 0; f < LOGO_FOLDERS.length; f++) {
+          for (let n = 0; n < baseNames.length; n++) {
+            for (let e = 0; e < LOGO_EXTENSIONS.length; e++) {
+              add(LOGO_FOLDERS[f] + baseNames[n] + LOGO_EXTENSIONS[e]);
+            }
+          }
+        }
+
+        return list;
+      }
+
+      function applyCanvasProcessing(loadedImg, imgEl, slotEl, widthScale) {
+        try {
+          const w = loadedImg.naturalWidth;
+          const h = loadedImg.naturalHeight;
+          if (!w || !h) {
+            return;
+          }
+
+          const workCanvas = document.createElement("canvas");
+          workCanvas.width = w;
+          workCanvas.height = h;
+          const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
+          if (!workCtx) {
+            return;
+          }
+          workCtx.drawImage(loadedImg, 0, 0, w, h);
+
+          const imageData = workCtx.getImageData(0, 0, w, h);
+          const bgInfo = detectBackgroundFromCorners(imageData.data, w, h);
+
+          // If there is no plain background, keep the original image unchanged
+          if (!bgInfo) {
+            return;
+          }
+
+          floodFillBackground(imageData.data, w, h, bgInfo);
+          workCtx.putImageData(imageData, 0, 0);
+
+          const trimCanvas = trimTransparentEdges(workCanvas);
+          if (!trimCanvas) {
+            return;
+          }
+
+          const existingCanvas = slotEl.querySelector(".header-logo-canvas");
+          if (existingCanvas) {
+            existingCanvas.remove();
+          }
+
+          const displayCanvas = document.createElement("canvas");
+          displayCanvas.className = "header-logo header-logo-canvas";
+          displayCanvas.setAttribute("aria-hidden", "true");
+
+          const entry = { trimCanvas, displayCanvas, imgEl, widthScale: widthScale || 1 };
+          renderSharpLogoCanvas(entry);
+          processedLogos.push(entry);
+
+          slotEl.appendChild(displayCanvas);
+          imgEl.style.display = "none";
+        } catch (err) {
+          // Keep original image visible and unchanged if canvas processing fails
+          imgEl.style.display = "block";
+          imgEl.style.visibility = "visible";
+        }
+      }
+
       function processHeaderLogo(imgEl, slotEl, fileCandidates, widthScale) {
-        let lastProcessedSrc = "";
         let candidateIndex = 0;
 
-        function handleError() {
-          candidateIndex += 1;
-          if (fileCandidates && candidateIndex < fileCandidates.length) {
-            imgEl.src = fileCandidates[candidateIndex];
-          }
-        }
-
-        function handleLoad() {
-          if (!imgEl.complete || imgEl.naturalWidth === 0) {
+        function tryNext() {
+          if (!fileCandidates || candidateIndex >= fileCandidates.length) {
+            imgEl.removeAttribute("src");
+            imgEl.style.display = "block";
+            imgEl.style.visibility = "hidden";
             return;
           }
 
-          const srcKey = imgEl.currentSrc || imgEl.src;
-          if (!srcKey || lastProcessedSrc === srcKey) {
-            return;
-          }
-          lastProcessedSrc = srcKey;
+          const candidateUrl = fileCandidates[candidateIndex++];
+          const probe = new Image();
 
-          try {
-            const w = imgEl.naturalWidth;
-            const h = imgEl.naturalHeight;
-            if (!w || !h) {
-              imgEl.style.display = "";
+          probe.onload = function () {
+            if (!probe.naturalWidth || !probe.naturalHeight) {
+              tryNext();
               return;
             }
 
-            const workCanvas = document.createElement("canvas");
-            workCanvas.width = w;
-            workCanvas.height = h;
-            const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
-            if (!workCtx) {
-              imgEl.style.display = "";
-              return;
-            }
-            workCtx.drawImage(imgEl, 0, 0, w, h);
+            imgEl.src = candidateUrl;
+            imgEl.style.display = "block";
+            imgEl.style.visibility = "visible";
+            applyCanvasProcessing(probe, imgEl, slotEl, widthScale);
+          };
 
-            const imageData = workCtx.getImageData(0, 0, w, h);
-            const bgInfo = detectBackgroundFromCorners(imageData.data, w, h);
+          probe.onerror = function () {
+            tryNext();
+          };
 
-            // If there is no plain background, keep the original image as-is
-            if (!bgInfo) {
-              imgEl.style.display = "";
-              return;
-            }
-
-            floodFillBackground(imageData.data, w, h, bgInfo);
-            workCtx.putImageData(imageData, 0, 0);
-
-            const trimCanvas = trimTransparentEdges(workCanvas);
-            if (!trimCanvas) {
-              imgEl.style.display = "";
-              return;
-            }
-
-            const existingCanvas = slotEl.querySelector(".header-logo-canvas");
-            if (existingCanvas) {
-              existingCanvas.remove();
-            }
-
-            const displayCanvas = document.createElement("canvas");
-            displayCanvas.className = "header-logo header-logo-canvas";
-            displayCanvas.setAttribute("role", "img");
-            displayCanvas.setAttribute("aria-label", imgEl.alt || "Logo");
-
-            const entry = { trimCanvas, displayCanvas, imgEl, widthScale: widthScale || 1 };
-            renderSharpLogoCanvas(entry);
-            processedLogos.push(entry);
-
-            slotEl.appendChild(displayCanvas);
-            imgEl.style.display = "none";
-          } catch (err) {
-            // Keep original image visible if canvas processing fails for any reason
-            imgEl.style.display = "";
-          }
+          probe.src = candidateUrl;
         }
 
-        imgEl.addEventListener("error", handleError);
-        imgEl.addEventListener("load", handleLoad);
-
-        // Handle images that already finished loading or failed before listener attachment
-        if (imgEl.complete) {
-          if (imgEl.naturalWidth > 0) {
-            handleLoad();
-          } else {
-            handleError();
-          }
-        }
+        tryNext();
       }
 
       window.addEventListener("resize", function () {
@@ -776,22 +802,47 @@
               entry.displayCanvas.parentNode.removeChild(entry.displayCanvas);
             }
             if (entry.imgEl) {
-              entry.imgEl.style.display = "";
+              entry.imgEl.style.display = "block";
+              entry.imgEl.style.visibility = "visible";
             }
           }
         }
       });
 
+      const logo1Candidates = buildLogoCandidates(
+        [
+          "1.jpeg",
+          "1_altered.png",
+          "public/1.jpeg",
+          "public/1_altered.png",
+          "assets/aistudio/1_5c2ceda8.jpeg",
+          "public/assets/aistudio/1_5c2ceda8.jpeg"
+        ],
+        ["1", "logo1", "logo-1", "logo_1", "jauhar", "Jauhar", "Jauhar Emblem"]
+      );
+
+      const logo2Candidates = buildLogoCandidates(
+        [
+          "2.jpg",
+          "2_altered.png",
+          "public/2.jpg",
+          "public/2_altered.png",
+          "assets/aistudio/2_4bfca449.jpg",
+          "public/assets/aistudio/2_4bfca449.jpg"
+        ],
+        ["2", "logo2", "logo-2", "logo_2", "nust", "NUST", "NUST Emblem"]
+      );
+
       processHeaderLogo(
         document.getElementById("logoLeft"),
         document.getElementById("logoSlotLeft"),
-        ["1.jpg", "1.jpeg", "1.png", "1.webp", "1.JPG", "1.JPEG", "1.PNG"],
+        logo1Candidates,
         1.14
       );
       processHeaderLogo(
         document.getElementById("logoRight"),
         document.getElementById("logoSlotRight"),
-        ["2.jpg", "2.jpeg", "2.png", "2.webp", "2.JPG", "2.JPEG", "2.PNG"],
+        logo2Candidates,
         1
       );
 
